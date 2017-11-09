@@ -1,0 +1,13 @@
+input {
+  file {
+    type => "syslog"
+    path => [ "/var/log/syslog" ]
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => [{% for ip in elasticsearch_address %}"{{ip}}:{{elasticsearch_port}}"{% if not loop.last %},{% endif %}{% endfor %}]
+      template_overwrite => true
+  }
+}

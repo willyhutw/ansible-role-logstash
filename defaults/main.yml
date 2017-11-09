@@ -1,0 +1,5 @@
+---
+
+elasticsearch_address:
+  - 127.0.0.1
+elasticsearch_port: 9201

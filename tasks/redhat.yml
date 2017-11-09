@@ -1,0 +1,5 @@
+---
+
+- include: redhat/jre-redhat.yml
+- include: redhat/install-redhat.yml
+

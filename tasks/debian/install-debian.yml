@@ -1,0 +1,46 @@
+---
+
+- name: (install-debian) | check logstash
+  shell: dpkg -l | grep logstash
+  register: check_logstash_debian
+  ignore_errors: yes
+
+
+- name: (install-debian) | stop logstash service
+  service:
+    name: logstash
+    state: stopped
+  ignore_errors: yes
+  when:
+    - check_logstash_debian.rc == 0
+
+
+- name: (install-debian) | pkill logstash process
+  shell: pkill -9 -u logstash
+  ignore_errors: yes
+  when: check_logstash_debian.rc == 0
+
+
+- name: (install-debian) | remove logstash
+  apt:
+    name: logstash
+    state: absent
+    purge: yes
+  when: check_logstash_debian.rc == 0
+
+
+- name: (install-debian) | wget logstash package
+  get_url:
+    url: https://download.elastic.co/logstash/logstash/packages/debian/logstash-2.4.1_all.deb
+    dest: /tmp/logstash-2.4.1_all.deb
+
+
+- name: (install-debian) | install logstash
+  shell: dpkg -i /tmp/logstash-2.4.1_all.deb
+
+
+- name: (install-debian) | remove temp package
+  file:
+    path: /tmp/logstash-2.4.1_all.deb
+    state: absent
+

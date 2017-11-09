@@ -1,0 +1,62 @@
+---
+
+- name: (configurate) | replace config file
+  template:
+    src: '{{item}}.conf.j2'
+    dest: /etc/logstash/conf.d/{{item}}.conf
+  with_items:
+    - logstash
+
+
+- name: (configurate) | remove original init default file
+  file:
+    path: /etc/default/logstash
+    state: absent
+
+
+- name: (configurate) | replace init default file
+  template:
+    src: 'default_{{item}}.j2'
+    dest: /etc/default/{{item}}
+  with_items:
+    - logstash
+
+
+- name: (configurate) | remove original initd file
+  file:
+    path: /etc/init.d/logstash
+    state: absent
+
+
+- name: (configurate) | replace initd file
+  template:
+    src: 'initd_{{item}}.j2'
+    dest: /etc/init.d/{{item}}
+    mode: 0755
+  with_items:
+    - logstash
+
+
+- name: (configurate) | check systemctl
+  shell: /usr/bin/which systemctl
+  register: systemctl_exist
+  ignore_errors: yes
+
+
+- name: (configurate) | enable service
+  shell: /bin/systemctl daemon-reload && /bin/systemctl enable logstash.service
+  when:
+    - systemctl_exist.rc == 0
+
+
+- name: (configurate) | update-rc.d service
+  shell: /usr/sbin/update-rc.d logstash defaults
+  when:
+    - systemctl_exist.rc != 0
+
+
+- name: (configurate) | restart service
+  service:
+    name: logstash
+    state: restarted
+
